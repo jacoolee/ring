@@ -21,7 +21,7 @@ category="${array[2]}"
 rest=("${array[@]:3}")
 case $category in
     'rarebook')
-        bash ~/Rarebookscollection/pricedog/deeplink.sh $rest
+        # bash ABSOLUTE_FILE_PATH_TO_YOUR_SCRIPT $rest
         ;;
     *)
         ;;
