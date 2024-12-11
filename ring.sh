@@ -14,6 +14,9 @@ function alert {
 # deeplink format: ring://category/opcode/argument1[/argument2/...]
 url="${*}"
 
+# test
+alert "${url}"
+
 IFS='/'
 read -ra array <<< "${url}"
 
