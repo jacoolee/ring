@@ -14,17 +14,18 @@ struct ringApp: App {
         process.executableURL = URL(fileURLWithPath: "/bin/bash") // Use bash to run the script
         process.arguments = [scriptPath, url.absoluteString ] // Pass arguments to the script
 
-        let pipe = Pipe()
-        process.standardOutput = pipe
+//        let pipe = Pipe()
+//        process.standardOutput = pipe
 
         do {
             try process.run()
             process.waitUntilExit()
-
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            if let output = String(data: data, encoding: .utf8) {
-                print("Output from script: \(output)")
-            }
+//
+//            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+//            if let output = String(data: data, encoding: .utf8) {
+//                print("Output from script: \(output)")
+//            }
+            
         } catch {
             print("Error running script: \(error)")
         }
