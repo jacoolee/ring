@@ -1,43 +1,45 @@
 import Foundation
 import SwiftUI
+import AppKit
 
-@main
-struct ringApp: App {
-    init() {
-        print("Ring to rule them all")
+class AppDelegate: NSObject, NSApplicationDelegate {
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            print("Received:", url.absoluteString)
+            handleDeepLink(url)
+        }
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.windows.first?.orderOut(nil)
     }
     
     func handleDeepLink(_ url: URL) {
-        let scriptPath = "/Applications/ring.sh" // Replace with the actual path to your script
-
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash") // Use bash to run the script
-        process.arguments = [scriptPath, url.absoluteString ] // Pass arguments to the script
-
-//        let pipe = Pipe()
-//        process.standardOutput = pipe
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-//
-//            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-//            if let output = String(data: data, encoding: .utf8) {
-//                print("Output from script: \(output)")
-//            }
-            
-        } catch {
+        process.arguments = ["/Applications/ring.sh", url.absoluteString ] // Pass arguments to the script
+     do {
+        try process.run()
+        process.waitUntilExit()
+     } catch {
             print("Error running script: \(error)")
         }
     }
+
+}
+
+@main
+struct ringApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self)
+    var delegate
     
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .onOpenURL { url in
-                    print("App opened with URL: \(url)")
-                    handleDeepLink(url)
-                }
+        MenuBarExtra("URL Handler", systemImage: "link") {
+            Text("run 'open ring://whatever' in terminal, and create and modify /Applications/ring.sh to run your script.")
+            Button("Quit") {
+                NSApp.terminate(nil)
+            }
         }
     }
 }

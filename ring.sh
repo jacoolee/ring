@@ -14,17 +14,20 @@ function alert {
 # deeplink format: ring://category/opcode/argument1[/argument2/...]
 url="${*}"
 
-# test
-alert "${url}"
+echo ${url} >> /tmp/ring.sh.log
 
 IFS='/'
 read -ra array <<< "${url}"
 
 category="${array[2]}"
 rest=("${array[@]:3}")
+
 case $category in
     'rarebook')
-        # bash ABSOLUTE_FILE_PATH_TO_YOUR_SCRIPT $rest
+        bash ~/github/jacoolee/rbw/deeplink.sh $rest
+        ;;
+    'mlv')
+        bash ~/github/jacoolee/mlv/tuhs/ring.sh $rest
         ;;
     *)
         ;;

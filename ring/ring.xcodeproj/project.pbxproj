@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		D1F5A62A2D09510D00BB4502 /* ringApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F5A6292D09510D00BB4502 /* ringApp.swift */; };
-		D1F5A62C2D09510D00BB4502 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F5A62B2D09510D00BB4502 /* ContentView.swift */; };
 		D1F5A62E2D09510E00BB4502 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1F5A62D2D09510E00BB4502 /* Assets.xcassets */; };
 		D1F5A6312D09510E00BB4502 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1F5A6302D09510E00BB4502 /* Preview Assets.xcassets */; };
 		D1F5A63C2D09510E00BB4502 /* ringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F5A63B2D09510E00BB4502 /* ringTests.swift */; };
@@ -36,7 +35,6 @@
 /* Begin PBXFileReference section */
 		D1F5A6262D09510D00BB4502 /* ring.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ring.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1F5A6292D09510D00BB4502 /* ringApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ringApp.swift; sourceTree = "<group>"; };
-		D1F5A62B2D09510D00BB4502 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D1F5A62D2D09510E00BB4502 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D1F5A6302D09510E00BB4502 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D1F5A6322D09510E00BB4502 /* ring.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ring.entitlements; sourceTree = "<group>"; };
@@ -98,7 +96,6 @@
 			children = (
 				D1F5A6582D09559F00BB4502 /* Info.plist */,
 				D1F5A6292D09510D00BB4502 /* ringApp.swift */,
-				D1F5A62B2D09510D00BB4502 /* ContentView.swift */,
 				D1F5A62D2D09510E00BB4502 /* Assets.xcassets */,
 				D1F5A6322D09510E00BB4502 /* ring.entitlements */,
 				D1F5A62F2D09510E00BB4502 /* Preview Content */,
@@ -261,7 +258,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D1F5A62C2D09510D00BB4502 /* ContentView.swift in Sources */,
 				D1F5A62A2D09510D00BB4502 /* ringApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
