@@ -26,9 +26,6 @@ case $category in
     'rarebook')
         bash ~/github/jacoolee/rbw/deeplink.sh $rest
         ;;
-    'mlv')
-        bash ~/github/jacoolee/mlv/tuhs/ring.sh $rest
-        ;;
-    *)
+   *)
         ;;
 esac

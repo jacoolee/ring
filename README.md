@@ -1,7 +1,7 @@
 ```
 ring
 
-web --> urlscheme --> scripts --> web/others
+anywhere --> urlscheme --> scripts --> anywhere 
 
 1. download and extract ./ring.app.zip, move extracted ring.app into /Applications;
 2. cp './ring.sh' into /Applications, aka, '/Applications/ring.sh';
