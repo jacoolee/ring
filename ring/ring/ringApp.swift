@@ -5,6 +5,42 @@ import AppKit
 struct MenuItem: Codable {
     let name: String
     let url: String
+    let items: [MenuItem]
+
+    enum CodingKeys: String, CodingKey {
+        case name, url, items
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        url = try container.decodeIfPresent(String.self, forKey: .url) ?? ""
+        items = try container.decodeIfPresent([MenuItem].self, forKey: .items) ?? []
+    }
+}
+
+struct MenuItemView: View {
+    let item: MenuItem
+
+    @ViewBuilder
+    var body: some View {
+        if !item.items.isEmpty {
+            Menu(item.name) {
+                ForEach(item.items.indices, id: \.self) { index in
+                    MenuItemView(item: item.items[index])
+                }
+            }
+        } else {
+            Button(item.name) {
+                handleMenuItem(item)
+            }
+        }
+    }
+
+    private func handleMenuItem(_ item: MenuItem) {
+        print("Clicked: \(item.name) \(item.url)")
+        NSWorkspace.shared.open(URL(string: item.url)!)
+    }
 }
 
 func loadMenuItems() -> [MenuItem] {
@@ -62,7 +98,12 @@ struct ringApp: App {
     let items = loadMenuItems()
 
     var body: some Scene {
-        MenuBarExtra("URL Handler", systemImage: "link") {
+        MenuBarExtra("Ring", systemImage: "circle") {
+            ForEach(items.indices, id: \.self) { index in
+                MenuItemView(item: items[index])
+            }
+
+            Divider()
             Button("How to use") {
                 let alert = NSAlert()
                    alert.messageText = "How to use Ring.app"
@@ -71,16 +112,6 @@ struct ringApp: App {
                    alert.addButton(withTitle: "OK")
                    alert.runModal()
             }
-            
-            Divider()
-            ForEach(items.indices, id:\.self) { index in
-                let item = items[index]
-                Button(item.name) {
-                    NSWorkspace.shared.open(URL(string: item.url)!)
-                }
-            }
-
-            Divider()
             Button("Quit") {
                 NSApp.terminate(nil)
             }
