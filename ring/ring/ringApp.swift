@@ -2,25 +2,29 @@ import Foundation
 import SwiftUI
 import AppKit
 
-struct MenuItem {
+struct MenuItem: Codable {
     let name: String
     let url: String
 }
 
-let items: [MenuItem] = [
-    MenuItem(
-        name: "Switch theme",
-        url: "ring://switch-theme",
-    ),
-    MenuItem(
-        name: "Open system preferences",
-        url: "ring://open-system-preferences",
-    ),
-    MenuItem(
-        name: "debug",
-        url: "ring://debug",
-    )
-]
+func loadMenuItems() -> [MenuItem] {
+    let jsonfile = "~/ring.json"
+    let path = NSString(string: jsonfile).expandingTildeInPath
+    let url = URL(fileURLWithPath: path)
+    do {
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode([MenuItem].self, from: data)
+    } catch {
+        print("Failed to load ring.json: \(error)")
+        let alert = NSAlert()
+           alert.messageText = "Ring.app"
+           alert.informativeText = "\(jsonfile) is not a valid json, use some json-check tool to ensure the json is valid.\n\n\(error)"
+           alert.alertStyle = .informational
+           alert.addButton(withTitle: "OK")
+           alert.runModal()
+        return []
+    }
+}
 
 class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -38,7 +42,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func handleDeepLink(_ url: URL) {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash") // Use bash to run the script
-        process.arguments = ["/Applications/ring.sh", url.absoluteString ] // Pass arguments to the script
+        process.arguments = [
+            NSString(string: "~/ring.sh").expandingTildeInPath,
+            url.absoluteString
+        ] // Pass arguments to the script
      do {
         try process.run()
         process.waitUntilExit()
@@ -46,28 +53,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             print("Error running script: \(error)")
         }
     }
-
 }
 
 @main
 struct ringApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self)
     var delegate
-    
+    let items = loadMenuItems()
+
     var body: some Scene {
         MenuBarExtra("URL Handler", systemImage: "link") {
             Button("How to use") {
                 let alert = NSAlert()
-                   alert.messageText = "Ring"
-                   alert.informativeText = "Modify /Applications/ring.sh (create if not exists) to run anything your want, and use open \"ring://whatever\" to trigger."
+                   alert.messageText = "How to use Ring.app"
+                   alert.informativeText = "1. define menus in \"~/ring.json\".\n2. define actions in \"~/ring.sh\", eg. to run script, app, or anything else.\n3. click the menu item or run \"open ring://WHAT_EVER_YOU_HAVE_DEFINED\" in terminal to trigger action.\n\nCheck out \"~/ring.sh\" and \"~/ring.json\" for more details."
                    alert.alertStyle = .informational
                    alert.addButton(withTitle: "OK")
                    alert.runModal()
             }
             
             Divider()
-            
-            ForEach(items, id:\.name) { item in
+            ForEach(items.indices, id:\.self) { index in
+                let item = items[index]
                 Button(item.name) {
                     NSWorkspace.shared.open(URL(string: item.url)!)
                 }
