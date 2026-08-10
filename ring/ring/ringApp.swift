@@ -2,6 +2,26 @@ import Foundation
 import SwiftUI
 import AppKit
 
+struct MenuItem {
+    let name: String
+    let url: String
+}
+
+let items: [MenuItem] = [
+    MenuItem(
+        name: "Switch theme",
+        url: "ring://switch-theme",
+    ),
+    MenuItem(
+        name: "Open system preferences",
+        url: "ring://open-system-preferences",
+    ),
+    MenuItem(
+        name: "debug",
+        url: "ring://debug",
+    )
+]
+
 class AppDelegate: NSObject, NSApplicationDelegate {
 
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -36,7 +56,24 @@ struct ringApp: App {
     
     var body: some Scene {
         MenuBarExtra("URL Handler", systemImage: "link") {
-            Text("run 'open ring://whatever' in terminal, and create and modify /Applications/ring.sh to run your script.")
+            Button("How to use") {
+                let alert = NSAlert()
+                   alert.messageText = "Ring"
+                   alert.informativeText = "Modify /Applications/ring.sh (create if not exists) to run anything your want, and use open \"ring://whatever\" to trigger."
+                   alert.alertStyle = .informational
+                   alert.addButton(withTitle: "OK")
+                   alert.runModal()
+            }
+            
+            Divider()
+            
+            ForEach(items, id:\.name) { item in
+                Button(item.name) {
+                    NSWorkspace.shared.open(URL(string: item.url)!)
+                }
+            }
+
+            Divider()
             Button("Quit") {
                 NSApp.terminate(nil)
             }
