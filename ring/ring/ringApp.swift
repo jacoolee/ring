@@ -3,17 +3,19 @@ import SwiftUI
 import AppKit
 
 struct MenuItem: Codable {
+    let type: String
     let name: String
     let url: String
     let items: [MenuItem]
 
     enum CodingKeys: String, CodingKey {
-        case name, url, items
+        case type, name, url, items
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        name = try container.decode(String.self, forKey: .name)
+        type = try container.decodeIfPresent(String.self, forKey: .type) ?? ""
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
         url = try container.decodeIfPresent(String.self, forKey: .url) ?? ""
         items = try container.decodeIfPresent([MenuItem].self, forKey: .items) ?? []
     }
@@ -24,7 +26,9 @@ struct MenuItemView: View {
 
     @ViewBuilder
     var body: some View {
-        if !item.items.isEmpty {
+        if item.type == "divider" {
+            Divider()
+        } else if !item.items.isEmpty {
             Menu(item.name) {
                 ForEach(item.items.indices, id: \.self) { index in
                     MenuItemView(item: item.items[index])
@@ -95,10 +99,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 struct ringApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self)
     var delegate
-    let items = loadMenuItems()
+
+    @State private var items: [MenuItem] = loadMenuItems()
 
     var body: some Scene {
-        MenuBarExtra("Ring", systemImage: "circle") {
+        MenuBarExtra {
             ForEach(items.indices, id: \.self) { index in
                 MenuItemView(item: items[index])
             }
@@ -107,14 +112,30 @@ struct ringApp: App {
             Button("How to use") {
                 let alert = NSAlert()
                    alert.messageText = "How to use Ring.app"
-                   alert.informativeText = "1. define menus in \"~/ring.json\".\n2. define actions in \"~/ring.sh\", eg. to run script, app, or anything else.\n3. click the menu item or run \"open ring://WHAT_EVER_YOU_HAVE_DEFINED\" in terminal to trigger action.\n\nCheck out \"~/ring.sh\" and \"~/ring.json\" for more details."
+                   alert.informativeText = "1. define menus in \"~/ring.json\".\n2. define actions in \"~/ring.sh\", eg. to run script, app, or anything else.\n3. click the menu item to trigger action.\n\nTips: click the \"Reload\" menu to reload \"~/ring.json\" after modifing the file.\n\nAnd, check out \"~/ring.sh\" and \"~/ring.json\" for more details."
                    alert.alertStyle = .informational
                    alert.addButton(withTitle: "OK")
                    alert.runModal()
             }
+            Button("Reload") {
+                items = loadMenuItems()
+            }
             Button("Quit") {
                 NSApp.terminate(nil)
             }
+        } label: {
+            Image(nsImage: {
+                let image = NSImage(
+                    systemSymbolName: "circle",
+                    accessibilityDescription: "Ring"
+                )!
+                return image.withSymbolConfiguration(
+                    NSImage.SymbolConfiguration(
+                        pointSize: 15,
+                        weight: .bold
+                    )
+                )!
+            }())
         }
     }
 }
