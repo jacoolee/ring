@@ -56,6 +56,7 @@ final class GlobalHotKeyManager {
                         item: item
                     )
                 )
+                print("Registered \(shortcut) → \(item.name)")
             }
         }
     }

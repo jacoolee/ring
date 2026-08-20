@@ -9,7 +9,6 @@ struct Shortcut {
 
     init?(_ string: String?) {
         guard let string else {
-            print("Shortcut init \(string ?? "No")")
             return nil
         }
 
@@ -58,10 +57,29 @@ struct Shortcut {
         self.carbonModifiers = carbonModifiers
     }
 
+    // MARK: - SwiftUI
+
     var keyEquivalent: KeyEquivalent {
-        print("keyEquivalent:", key)
-        return KeyEquivalent(Character(key))
+        switch key {
+        case "f1":  return KeyEquivalent("\u{F704}")
+        case "f2":  return KeyEquivalent("\u{F705}")
+        case "f3":  return KeyEquivalent("\u{F706}")
+        case "f4":  return KeyEquivalent("\u{F707}")
+        case "f5":  return KeyEquivalent("\u{F708}")
+        case "f6":  return KeyEquivalent("\u{F709}")
+        case "f7":  return KeyEquivalent("\u{F70A}")
+        case "f8":  return KeyEquivalent("\u{F70B}")
+        case "f9":  return KeyEquivalent("\u{F70C}")
+        case "f10": return KeyEquivalent("\u{F70D}")
+        case "f11": return KeyEquivalent("\u{F70E}")
+        case "f12": return KeyEquivalent("\u{F70F}")
+
+        default:
+            return KeyEquivalent(Character(key))
+        }
     }
+
+    // MARK: - Carbon
 
     private static func keyCode(for key: String) -> UInt32? {
         switch key {
@@ -103,7 +121,26 @@ struct Shortcut {
         case "8": UInt32(kVK_ANSI_8)
         case "9": UInt32(kVK_ANSI_9)
 
-        default: nil
+        case "f1": UInt32(kVK_F1)
+        case "f2": UInt32(kVK_F2)
+        case "f3": UInt32(kVK_F3)
+        case "f4": UInt32(kVK_F4)
+        case "f5": UInt32(kVK_F5)
+        case "f6": UInt32(kVK_F6)
+        case "f7": UInt32(kVK_F7)
+        case "f8": UInt32(kVK_F8)
+        case "f9": UInt32(kVK_F9)
+        case "f10": UInt32(kVK_F10)
+        case "f11": UInt32(kVK_F11)
+        case "f12": UInt32(kVK_F12)
+
+        case "space": UInt32(kVK_Space)
+        case "return", "enter": UInt32(kVK_Return)
+        case "escape", "esc": UInt32(kVK_Escape)
+        case "tab": UInt32(kVK_Tab)
+
+        default:
+            nil
         }
     }
 }
