@@ -16,15 +16,21 @@ struct MenuItemView: View {
                 }
             }
         } else {
-            Button(item.name) {
-                handleMenuItem(item)
+            if let shortcut = Shortcut(item.shortcut) {
+                Button(item.name) {
+                    item.handle()
+                }
+                .keyboardShortcut(
+                    shortcut.keyEquivalent,
+                    modifiers: shortcut.modifiers
+                )
+            }
+            else {
+                Button(item.name) {
+                    item.handle()
+                }
             }
         }
-    }
-
-    private func handleMenuItem(_ item: MenuItem) {
-        print("Clicked: \(item.name) \(item.url)")
-        item.handle()
     }
 }
 
