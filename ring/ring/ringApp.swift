@@ -2,56 +2,7 @@ import Foundation
 import SwiftUI
 import AppKit
 
-struct MenuItemView: View {
-    let item: MenuItem
 
-    @ViewBuilder
-    var body: some View {
-        if item.type == "divider" {
-            Divider()
-        } else if !item.items.isEmpty {
-            Menu(item.name) {
-                ForEach(item.items.indices, id: \.self) { index in
-                    MenuItemView(item: item.items[index])
-                }
-            }
-        } else {
-            if let shortcut = Shortcut(item.shortcut) {
-                Button(item.name) {
-                    item.handle()
-                }
-                .keyboardShortcut(
-                    shortcut.keyEquivalent,
-                    modifiers: shortcut.modifiers
-                )
-            }
-            else {
-                Button(item.name) {
-                    item.handle()
-                }
-            }
-        }
-    }
-}
-
-func loadMenuItems() -> [MenuItem] {
-    let jsonfile = "~/ring.json"
-    let path = NSString(string: jsonfile).expandingTildeInPath
-    let url = URL(fileURLWithPath: path)
-    do {
-        let data = try Data(contentsOf: url)
-        return try JSONDecoder().decode([MenuItem].self, from: data)
-    } catch {
-        print("Failed to load ring.json: \(error)")
-        let alert = NSAlert()
-           alert.messageText = "Ring.app"
-           alert.informativeText = "\(jsonfile) is not a valid json, use some json-check tool to ensure the json is valid.\n\n\(error)"
-           alert.alertStyle = .informational
-           alert.addButton(withTitle: "OK")
-           alert.runModal()
-        return []
-    }
-}
 
 class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -87,7 +38,7 @@ struct ringApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self)
     var delegate
 
-    @State private var items: [MenuItem] = loadMenuItems()
+    @State private var items: [MenuItem] = []
     private let hotKeyManager = GlobalHotKeyManager()
 
     init() {
@@ -106,6 +57,25 @@ struct ringApp: App {
         hotKeyManager.register(items: items)
     }
 
+    private func loadMenuItems() -> [MenuItem] {
+        let jsonfile = "~/ring.json"
+        let path = NSString(string: jsonfile).expandingTildeInPath
+        let url = URL(fileURLWithPath: path)
+        do {
+            let data = try Data(contentsOf: url)
+            return try JSONDecoder().decode([MenuItem].self, from: data)
+        } catch {
+            print("Failed to load ring.json: \(error)")
+            let alert = NSAlert()
+               alert.messageText = "Ring.app"
+               alert.informativeText = "\(jsonfile) is not a valid json, use some json-check tool to ensure the json is valid.\n\n\(error)"
+               alert.alertStyle = .informational
+               alert.addButton(withTitle: "OK")
+               alert.runModal()
+            return []
+        }
+    }
+    
     var body: some Scene {
         MenuBarExtra {
             ForEach(items.indices, id: \.self) { index in
