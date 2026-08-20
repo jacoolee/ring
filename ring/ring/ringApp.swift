@@ -2,7 +2,8 @@ import Foundation
 import SwiftUI
 import AppKit
 
-
+let gRingJsonFile = "~/.ring.json"
+let gRingScriptFile = "~/.ring.sh"
 
 class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -21,7 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash") // Use bash to run the script
         process.arguments = [
-            NSString(string: "~/ring.sh").expandingTildeInPath,
+            NSString(string: gRingScriptFile).expandingTildeInPath,
             url.absoluteString
         ] // Pass arguments to the script
      do {
@@ -42,6 +43,8 @@ struct ringApp: App {
     private let hotKeyManager = GlobalHotKeyManager()
 
     init() {
+        ensureRingJsonFile()
+        ensureRingScriptFile()
         let loadedItems = loadMenuItems()
         _items = State(initialValue: loadedItems)
         hotKeyManager.action = { item in
@@ -52,23 +55,139 @@ struct ringApp: App {
         hotKeyManager.register(items: loadedItems)
     }
 
+    private func ensureRingJsonFile() {
+        let path = NSString(string: gRingJsonFile).expandingTildeInPath
+        let url = URL(fileURLWithPath: path)
+
+        guard !FileManager.default.fileExists(atPath: url.path) else {
+            return
+        }
+
+        let content = """
+        [
+            {
+                "name": "Systems",
+                "items": [
+                    {
+                        "name": "Switch system appearence",
+                        "url": "ring://switch-system-appearence",
+                        "shortcut": "cmd+ctrl+f12"
+                    }
+                ]
+            },
+            {
+                "name": "Alert",
+                "url": "ring://alert/ALERT-MESSAGE-HERE"
+            }
+        ]
+        """
+        do {
+            try content.write(to: url, atomically: true, encoding: .utf8)
+            print("Created \(url.path)")
+        } catch {
+            print("Failed to create \(url.path): \(error)")
+        }
+    }
+    
+    private func ensureExecutable(_ path: String) {
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: path) else {
+            print("File does not exist: \(path)")
+            return
+        }
+
+        do {
+            let attributes = try fm.attributesOfItem(atPath: path)
+            guard let permissions = attributes[.posixPermissions] as? NSNumber else {
+                print("Could not get permissions")
+                return
+            }
+            let mode = permissions.uint16Value
+            // Already executable by owner/group/others?
+            if mode & 0o100 != 0 {
+                print("Already executable")
+                return
+            }
+            // Add execute permission while preserving existing permissions.
+            try fm.setAttributes(
+                [.posixPermissions: mode | 0o111],
+                ofItemAtPath: path
+            )
+            print("Made executable: \(path)")
+        } catch {
+            print("Failed: \(error)")
+        }
+    }
+    
+    private func ensureRingScriptFile() {
+        let path = NSString(string: gRingScriptFile).expandingTildeInPath
+        let url = URL(fileURLWithPath: path)
+
+        let fm = FileManager.default
+        
+        guard !fm.fileExists(atPath: url.path) else {
+            ensureExecutable(url.path)
+            return
+        }
+
+        let content = """
+        #!/usr/bin/env bash
+        # set -x
+
+        # debug tool
+        function alert {
+            message="${1}"
+            osascript -e "display dialog \\"${message}\\" buttons {\\"OK\\"} default button 1"
+        }
+
+        # sample deeplink format: ring://action/argument1[/argument2/...]
+        url="${*}"
+
+        echo ${url} >> /tmp/ring.sh.log
+
+        IFS='/'
+        read -ra array <<< "${url}"
+
+        action="${array[2]}"
+        args=("${array[@]:3}")
+
+        case $action in
+            'switch-system-appearence')
+                osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to not dark mode'
+                ;;        
+
+            'alert')
+                alert "${args:-alert}"
+                ;;
+            *)
+                ;;
+        esac
+        """
+        do {
+            try content.write(to: url, atomically: true, encoding: .utf8)
+            print("Created \(url.path)")
+        } catch {
+            print("Failed to create \(url.path): \(error)")
+        }
+        ensureExecutable(url.path)
+    }
+
     private func reload() {
         items = loadMenuItems()
         hotKeyManager.register(items: items)
     }
 
     private func loadMenuItems() -> [MenuItem] {
-        let jsonfile = "~/ring.json"
-        let path = NSString(string: jsonfile).expandingTildeInPath
+        let path = NSString(string: gRingJsonFile).expandingTildeInPath
         let url = URL(fileURLWithPath: path)
         do {
             let data = try Data(contentsOf: url)
             return try JSONDecoder().decode([MenuItem].self, from: data)
         } catch {
-            print("Failed to load ring.json: \(error)")
+            print("Failed to load \(gRingScriptFile): \(error)")
             let alert = NSAlert()
                alert.messageText = "Ring.app"
-               alert.informativeText = "\(jsonfile) is not a valid json, use some json-check tool to ensure the json is valid.\n\n\(error)"
+               alert.informativeText = "\(gRingJsonFile) is not a valid json, use some json-check tool to ensure the json is valid.\n\n\(error)"
                alert.alertStyle = .informational
                alert.addButton(withTitle: "OK")
                alert.runModal()
@@ -86,7 +205,7 @@ struct ringApp: App {
             Button("How to use") {
                 let alert = NSAlert()
                    alert.messageText = "How to use Ring.app"
-                   alert.informativeText = "1. define menus in \"~/ring.json\".\n2. define actions in \"~/ring.sh\", eg. to run script, app, or anything else.\n3. click the menu item to trigger action.\n\nTips: click the \"Reload\" menu to reload \"~/ring.json\" after modifing the file.\n\nAnd, check out \"~/ring.sh\" and \"~/ring.json\" for more details."
+                   alert.informativeText = "1. define menus in \"\(gRingJsonFile)\".\n2. define actions in \"\(gRingScriptFile)\", eg. to run script, app, or anything else.\n3. click the menu item to trigger action.\n\nTips: click the \"Reload\" menu to reload \"\(gRingJsonFile)\" after modifing the file.\n\nAnd, check out \"\(gRingJsonFile)\" and \"\(gRingScriptFile)\" for more details."
                    alert.alertStyle = .informational
                    alert.addButton(withTitle: "OK")
                    alert.runModal()
