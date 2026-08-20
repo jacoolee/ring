@@ -2,25 +2,6 @@ import Foundation
 import SwiftUI
 import AppKit
 
-struct MenuItem: Codable {
-    let type: String
-    let name: String
-    let url: String
-    let items: [MenuItem]
-
-    enum CodingKeys: String, CodingKey {
-        case type, name, url, items
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        type = try container.decodeIfPresent(String.self, forKey: .type) ?? ""
-        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
-        url = try container.decodeIfPresent(String.self, forKey: .url) ?? ""
-        items = try container.decodeIfPresent([MenuItem].self, forKey: .items) ?? []
-    }
-}
-
 struct MenuItemView: View {
     let item: MenuItem
 
@@ -43,7 +24,7 @@ struct MenuItemView: View {
 
     private func handleMenuItem(_ item: MenuItem) {
         print("Clicked: \(item.name) \(item.url)")
-        NSWorkspace.shared.open(URL(string: item.url)!)
+        item.handle()
     }
 }
 
@@ -101,6 +82,23 @@ struct ringApp: App {
     var delegate
 
     @State private var items: [MenuItem] = loadMenuItems()
+    private let hotKeyManager = GlobalHotKeyManager()
+
+    init() {
+        let loadedItems = loadMenuItems()
+        _items = State(initialValue: loadedItems)
+        hotKeyManager.action = { item in
+            print("Global hotkey: \(item.name)")
+            print("URL: \(item.url)")
+            item.handle()
+        }
+        hotKeyManager.register(items: loadedItems)
+    }
+
+    private func reload() {
+        items = loadMenuItems()
+        hotKeyManager.register(items: items)
+    }
 
     var body: some Scene {
         MenuBarExtra {
@@ -118,7 +116,7 @@ struct ringApp: App {
                    alert.runModal()
             }
             Button("Reload") {
-                items = loadMenuItems()
+                reload()
             }
             Button("Quit") {
                 NSApp.terminate(nil)
